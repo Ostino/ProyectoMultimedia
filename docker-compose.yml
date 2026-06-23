@@ -1,0 +1,154 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ProyectoMultimedia — full stack
+#
+# Usage:
+#   cp .env.example .env          # fill in secrets
+#   mkdir -p storage              # shared media volume
+#   docker compose up --build
+#
+# Management UIs (dev only):
+#   RabbitMQ  http://localhost:15672   (RABBITMQ_USER / RABBITMQ_PASSWORD)
+#   PostgreSQL port 5432               (use pgAdmin or psql)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Infrastructure ─────────────────────────────────────────────────────────
+
+  postgres:
+    image: postgres:16
+    ports:
+      - "5432:5432"          # exposed for local tooling (pgAdmin, psql)
+    environment:
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "15672:15672"        # management UI — don't expose 5672 externally
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
+    restart: unless-stopped
+
+  # ── Backend services ────────────────────────────────────────────────────────
+
+  auth-service:
+    build: ./auth-service
+    expose:
+      - "8081"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8081/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s     # Spring Boot needs ~30-60 s to start
+    restart: unless-stopped
+
+  app-service:
+    build: ./app-service
+    expose:
+      - "8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      RABBITMQ_USER:     ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      # auth-service is resolved by service name inside the Docker network
+      JWKS_URI:          http://auth-service:8081/.well-known/jwks.json
+      STORAGE_PATH:      /data
+    volumes:
+      - ./storage:/data     # shared bind mount with optimizer-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy   # JWKS must be available before app starts
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 90s     # waits for auth-service + own startup
+    restart: unless-stopped
+
+  optimizer-service:
+    build: ./optimizer-service
+    expose:
+      - "8082"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      RABBITMQ_USER:     ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+      STORAGE_PATH:      /data
+    volumes:
+      - ./storage:/data     # reads originals written by app-service; writes derivatives
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fs", "http://localhost:8082/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 6
+      start_period: 60s
+    restart: unless-stopped
+
+  # ── Reverse proxy ───────────────────────────────────────────────────────────
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      # Uncomment to mount TLS certificates for HTTPS:
+      # - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      auth-service:
+        condition: service_healthy
+      app-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Frontend ────────────────────────────────────────────────────────────────
+  web:
+    build: ./web
+    expose:
+      - "3000"
+    restart: unless-stopped
+
+volumes:
+  pgdata:

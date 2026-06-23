@@ -1,0 +1,1 @@
+ALTER TABLE metadata ADD COLUMN author VARCHAR(255);

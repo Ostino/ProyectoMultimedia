@@ -1,0 +1,2 @@
+-- auth-service: initial schema placeholder
+-- User and credential tables will be added in the next migration.

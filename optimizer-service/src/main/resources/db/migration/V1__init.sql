@@ -1,0 +1,2 @@
+-- optimizer-service: initial schema placeholder
+-- Processing job tables will be added in the next migration.

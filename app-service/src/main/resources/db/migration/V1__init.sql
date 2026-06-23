@@ -1,0 +1,2 @@
+-- app-service: initial schema placeholder
+-- Folder, file, tag and metadata tables will be added in the next migration.
