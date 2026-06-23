@@ -29,8 +29,8 @@ function ImagePreview({ fileId }) {
   const [src, setSrc] = useState(null)
   useEffect(() => {
     let url
-    fetchDerivativeBlob(fileId, 'thumb_lg')
-      .catch(() => fetchDerivativeBlob(fileId, 'thumb_sm'))
+    fetchDerivativeBlob(fileId, 'thumb_1024')
+      .catch(() => fetchDerivativeBlob(fileId, 'thumb_512'))
       .then((blobUrl) => { url = blobUrl; setSrc(blobUrl) })
       .catch(() => {})
     return () => { if (url) URL.revokeObjectURL(url) }
@@ -48,7 +48,7 @@ export default function FileDetailModal({ fileId, onClose }) {
     queryKey: ['file-detail', fileId],
     queryFn: () => getFileDetail(fileId),
     refetchInterval: (query) => {
-      const status = query.state.data?.file?.status
+      const status = query.state.data?.status
       return !status || ['PENDING', 'PROCESSING'].includes(status) ? 3000 : false
     },
   })
@@ -58,7 +58,7 @@ export default function FileDetailModal({ fileId, onClose }) {
     queryFn: () => listFileTags(fileId),
   })
 
-  const file = data?.file
+  const file = data
   const meta = data?.metadata
 
   const downloadOriginal = () => {
@@ -143,7 +143,11 @@ export default function FileDetailModal({ fileId, onClose }) {
                   <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Archivo</p>
                   <MetaRow label="Tipo" value={file?.fileType} />
                   <MetaRow label="MIME" value={file?.mimeType} />
-                  <MetaRow label="Tamaño" value={file?.sizeBytes ? `${(file.sizeBytes / 1024 / 1024).toFixed(2)} MB` : null} />
+                  <MetaRow label="Tamaño" value={file?.sizeBytes
+                    ? file.sizeBytes >= 1024 * 1024
+                      ? `${(file.sizeBytes / 1024 / 1024).toFixed(2)} MB`
+                      : `${(file.sizeBytes / 1024).toFixed(1)} KB`
+                    : null} />
                   <MetaRow label="Subido" value={file?.createdAt ? new Date(file.createdAt).toLocaleString('es-AR') : null} />
                 </section>
 

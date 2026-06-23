@@ -27,7 +27,7 @@ function AuthThumb({ fileId }) {
   const [visible, setVisible] = useState(false)
   const { data: src } = useQuery({
     queryKey: ['thumb', fileId],
-    queryFn: () => fetchDerivativeBlob(fileId, 'thumb_sm'),
+    queryFn: () => fetchDerivativeBlob(fileId, 'thumb_512'),
     enabled: visible,
     staleTime: Infinity,
     gcTime: 5 * 60 * 1000,
@@ -54,7 +54,7 @@ export default function FileCard({ file: initialFile, onOpen, onTag }) {
   // Poll status for non-final files
   const { data: polled } = useQuery({
     queryKey: ['file-status', initialFile.id],
-    queryFn: () => getFileDetail(initialFile.id).then((d) => d.file),
+    queryFn: () => getFileDetail(initialFile.id),
     enabled: needsPoll,
     refetchInterval: (query) => {
       const status = query.state.data?.status
@@ -101,7 +101,11 @@ export default function FileCard({ file: initialFile, onOpen, onTag }) {
           {file.originalName}
         </p>
         <p className="text-[10px] text-gray-400 mt-0.5">
-          {file.sizeBytes ? `${(file.sizeBytes / 1024 / 1024).toFixed(1)} MB` : ''}
+          {file.sizeBytes
+            ? file.sizeBytes >= 1024 * 1024
+              ? `${(file.sizeBytes / 1024 / 1024).toFixed(1)} MB`
+              : `${(file.sizeBytes / 1024).toFixed(1)} KB`
+            : ''}
         </p>
       </div>
     </div>
