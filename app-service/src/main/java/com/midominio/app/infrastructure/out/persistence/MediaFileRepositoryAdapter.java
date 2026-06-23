@@ -41,6 +41,12 @@ public class MediaFileRepositoryAdapter implements MediaFileRepository {
     }
 
     @Override
+    @Transactional
+    public void delete(UUID id) {
+        jpa.deleteById(id);
+    }
+
+    @Override
     public MediaFile save(MediaFile f) {
         MediaFileJpaEntity saved = jpa.save(new MediaFileJpaEntity(
                 f.getId(), f.getOriginalName(), f.getStoragePath(), f.getMimeType(),

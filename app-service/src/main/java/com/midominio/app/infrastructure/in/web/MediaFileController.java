@@ -2,6 +2,7 @@ package com.midominio.app.infrastructure.in.web;
 
 import com.midominio.app.domain.exception.FileNotFoundException;
 import com.midominio.app.domain.model.FileDetail;
+import com.midominio.app.domain.port.in.DeleteFileUseCase;
 import com.midominio.app.domain.port.in.FileQueryUseCase;
 import com.midominio.app.domain.port.out.ThumbnailRepository;
 import org.springframework.core.io.FileSystemResource;
@@ -21,11 +22,14 @@ public class MediaFileController {
 
     private final FileQueryUseCase    fileQueryUseCase;
     private final ThumbnailRepository thumbnailRepository;
+    private final DeleteFileUseCase   deleteFileUseCase;
 
     public MediaFileController(FileQueryUseCase fileQueryUseCase,
-                               ThumbnailRepository thumbnailRepository) {
+                               ThumbnailRepository thumbnailRepository,
+                               DeleteFileUseCase deleteFileUseCase) {
         this.fileQueryUseCase    = fileQueryUseCase;
         this.thumbnailRepository = thumbnailRepository;
+        this.deleteFileUseCase   = deleteFileUseCase;
     }
 
     @GetMapping("/{id}")
@@ -65,6 +69,15 @@ public class MediaFileController {
         return ResponseEntity.ok()
                 .contentType(guessContentType(thumbnail.getStoragePath()))
                 .body(resource);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+            @PathVariable UUID id,
+            @AuthenticationPrincipal Jwt jwt) {
+        UUID ownerId = UUID.fromString(jwt.getSubject());
+        deleteFileUseCase.delete(id, ownerId);
+        return ResponseEntity.noContent().build();
     }
 
     private MediaType parseContentType(String mimeType) {

@@ -12,6 +12,7 @@ public interface MediaFileRepository {
     MediaFile             save(MediaFile mediaFile);
     Optional<MediaFile>   findByIdAndOwnerId(UUID id, UUID ownerId);
     void                  updateStatus(UUID fileId, FileStatus status);
+    void                  delete(UUID id);
     PageResult<MediaFile> search(SearchCriteria criteria, UUID ownerId,
                                  int page, int size, String sortBy, boolean asc);
 }

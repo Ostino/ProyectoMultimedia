@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { X, Download, Tag, ExternalLink } from 'lucide-react'
-import { getFileDetail, fetchDerivativeBlob } from '../../api/files'
+import { X, Download, Tag, Trash2 } from 'lucide-react'
+import { getFileDetail, fetchDerivativeBlob, deleteFile } from '../../api/files'
 import { listFileTags } from '../../api/tags'
 import AudioPlayer from './AudioPlayer'
 import VideoPlayer from './VideoPlayer'
@@ -42,7 +42,21 @@ function ImagePreview({ fileId }) {
 
 export default function FileDetailModal({ fileId, onClose }) {
   const [showTagModal, setShowTagModal] = useState(false)
+  const [confirmDelete, setConfirmDelete] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const qc = useQueryClient()
+
+  const handleDelete = async () => {
+    if (!confirmDelete) { setConfirmDelete(true); return }
+    setDeleting(true)
+    try {
+      await deleteFile(fileId)
+      qc.invalidateQueries({ queryKey: ['search'] })
+      onClose()
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   const { data, isLoading } = useQuery({
     queryKey: ['file-detail', fileId],
@@ -105,6 +119,22 @@ export default function FileDetailModal({ fileId, onClose }) {
             <button onClick={downloadOriginal} title="Descargar original" className="text-gray-400 hover:text-gray-700">
               <Download size={18} />
             </button>
+            <button
+              onClick={handleDelete}
+              disabled={deleting}
+              title={confirmDelete ? 'Confirmar eliminación' : 'Eliminar archivo'}
+              className={`transition-colors ${confirmDelete ? 'text-red-600 hover:text-red-700' : 'text-gray-400 hover:text-red-500'}`}
+            >
+              <Trash2 size={18} />
+            </button>
+            {confirmDelete && (
+              <button
+                onClick={() => setConfirmDelete(false)}
+                className="text-[10px] text-gray-400 hover:text-gray-600"
+              >
+                cancelar
+              </button>
+            )}
             <button onClick={onClose} className="text-gray-400 hover:text-gray-700">
               <X size={20} />
             </button>

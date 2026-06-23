@@ -27,6 +27,9 @@ export const fetchOriginalBlob = (id) => fetchBlob(`${BASE}/${id}/original`)
 export const fetchDerivativeBlob = (id, label) =>
   fetchBlob(`${BASE}/${id}/derivative/${label}`)
 
+export const deleteFile = (id) =>
+  client.delete(`${BASE}/${id}`)
+
 // Raw waveform JSON from audiowaveform CLI
 export const fetchWaveformJson = (id) =>
   client.get(`${BASE}/${id}/derivative/waveform`).then((r) => r.data)
