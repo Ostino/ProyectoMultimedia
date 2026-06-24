@@ -22,12 +22,12 @@ const TYPE_COLOR = {
 }
 
 // Loads an image that requires Authorization header — lazy on scroll into view
-function AuthThumb({ fileId }) {
+function AuthThumb({ fileId, label }) {
   const ref = useRef(null)
   const [visible, setVisible] = useState(false)
   const { data: src } = useQuery({
-    queryKey: ['thumb', fileId],
-    queryFn: () => fetchDerivativeBlob(fileId, 'thumb_512'),
+    queryKey: ['thumb', fileId, label],
+    queryFn: () => fetchDerivativeBlob(fileId, label),
     enabled: visible,
     staleTime: Infinity,
     gcTime: 5 * 60 * 1000,
@@ -77,7 +77,7 @@ export default function FileCard({ file: initialFile, onOpen, onTag }) {
       {/* Thumbnail area */}
       <div className="h-36 bg-gray-50 relative flex items-center justify-center overflow-hidden">
         {showThumb
-          ? <AuthThumb fileId={file.id} />
+          ? <AuthThumb fileId={file.id} label={file.fileType === 'VIDEO' ? 'cover' : 'thumb_512'} />
           : <Icon size={40} className={`${iconColor} opacity-40`} />}
 
         {/* Status badge */}

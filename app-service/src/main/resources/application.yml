@@ -21,6 +21,10 @@ spring:
       resourceserver:
         jwt:
           jwk-set-uri: ${JWKS_URI:http://localhost:8081/.well-known/jwks.json}
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
   rabbitmq:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
