@@ -1,0 +1,30 @@
+version: "3.9"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Nginx reverse proxy — proyecto independiente para aparecer separado en
+# Docker Desktop del resto de servicios.
+#
+# Levantar DESPUÉS del compose principal (necesita la red proxy ya creada):
+#   docker compose up --build          # desde la raíz del proyecto
+#   docker compose up --build          # desde esta carpeta (nginx/)
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      # Uncomment to mount TLS certificates for HTTPS:
+      # - ./certs:/etc/nginx/certs:ro
+    restart: unless-stopped
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true
+    name: proyectomultimedia_proxy
