@@ -4,6 +4,8 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG VITE_DEMO_RETENTION=
+ENV VITE_DEMO_RETENTION=$VITE_DEMO_RETENTION
 RUN npm run build
 
 # ── Stage 2: serve ───────────────────────────────────────────────────────────

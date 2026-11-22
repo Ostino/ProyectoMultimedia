@@ -5,6 +5,8 @@ import com.midominio.app.domain.model.MediaFile;
 import com.midominio.app.domain.model.PageResult;
 import com.midominio.app.domain.port.in.SearchCriteria;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -13,6 +15,7 @@ public interface MediaFileRepository {
     Optional<MediaFile>   findByIdAndOwnerId(UUID id, UUID ownerId);
     void                  updateStatus(UUID fileId, FileStatus status);
     void                  delete(UUID id);
+    List<MediaFile>       findCreatedBefore(LocalDateTime cutoff);
     PageResult<MediaFile> search(SearchCriteria criteria, UUID ownerId,
                                  int page, int size, String sortBy, boolean asc);
 }

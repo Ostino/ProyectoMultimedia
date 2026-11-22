@@ -13,6 +13,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -44,6 +46,12 @@ public class MediaFileRepositoryAdapter implements MediaFileRepository {
     @Transactional
     public void delete(UUID id) {
         jpa.deleteById(id);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<MediaFile> findCreatedBefore(LocalDateTime cutoff) {
+        return jpa.findByCreatedAtBefore(cutoff).stream().map(this::toDomain).toList();
     }
 
     @Override

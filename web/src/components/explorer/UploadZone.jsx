@@ -4,6 +4,9 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Upload, X, CheckCircle, AlertCircle, Loader } from 'lucide-react'
 import { uploadFile } from '../../api/files'
 
+// Se define al construir la imagen en producción (modo demo). Vacío = sin aviso.
+const DEMO_RETENTION = import.meta.env.VITE_DEMO_RETENTION
+
 function UploadItem({ item }) {
   const color = item.status === 'done'
     ? 'text-green-600' : item.status === 'error'
@@ -89,6 +92,13 @@ export default function UploadZone({ folderId, onClose, onUploaded }) {
               </>
             )}
         </div>
+
+        {DEMO_RETENTION && (
+          <p className="mx-4 -mt-1 mb-4 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+            Demo pública: los archivos se borran automáticamente después de {DEMO_RETENTION}.
+            No subas archivos personales.
+          </p>
+        )}
 
         {/* Upload list */}
         {items.length > 0 && (

@@ -44,6 +44,14 @@ management:
     health:
       show-details: never
 
+
+# Modo demo: borra los archivos subidos después de cierto tiempo
+demo:
+  cleanup:
+    enabled: ${DEMO_CLEANUP_ENABLED:false}
+    retention: ${DEMO_CLEANUP_RETENTION:1h}
+    keep-files-before: ${DEMO_KEEP_FILES_BEFORE:}
+
 ---
 spring:
   config:

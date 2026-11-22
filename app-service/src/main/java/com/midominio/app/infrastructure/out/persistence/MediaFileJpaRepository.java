@@ -3,12 +3,16 @@ package com.midominio.app.infrastructure.out.persistence;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 interface MediaFileJpaRepository extends JpaRepository<MediaFileJpaEntity, UUID>,
                                           JpaSpecificationExecutor<MediaFileJpaEntity> {
     Optional<MediaFileJpaEntity> findByIdAndOwnerId(UUID id, UUID ownerId);
+
+    List<MediaFileJpaEntity> findByCreatedAtBefore(LocalDateTime cutoff);
 
     @org.springframework.data.jpa.repository.Modifying
     @org.springframework.data.jpa.repository.Query("UPDATE MediaFileJpaEntity e SET e.status = :status WHERE e.id = :id")
