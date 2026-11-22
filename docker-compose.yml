@@ -122,6 +122,9 @@ services:
       RABBITMQ_USER:     ${RABBITMQ_USER}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
       STORAGE_PATH:      /data
+      # AI tagging (optional): empty key = files are processed without AI tags
+      GEMINI_API_KEY:    ${GEMINI_API_KEY:-}
+      GEMINI_MODEL:      ${GEMINI_MODEL:-gemini-3.8-flash}
     volumes:
       - ./storage:/data     # reads originals written by app-service; writes derivatives
     depends_on:

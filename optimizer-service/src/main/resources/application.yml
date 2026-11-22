@@ -13,6 +13,14 @@ spring:
 storage:
   base-path: ${STORAGE_PATH:/data}
 
+# Etiquetado automático con Google Gemini. La key se lee SOLO de la variable
+# de entorno GEMINI_API_KEY; si está vacía, los archivos se procesan sin etiquetas de IA.
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  model: ${GEMINI_MODEL:gemini-3.8-flash}
+  timeout: 20s
+  max-tags: 5
+
 management:
   endpoints:
     web:
