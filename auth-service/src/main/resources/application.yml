@@ -17,6 +17,11 @@ spring:
     locations: classpath:db/migration
     allow-empty-migrations: true
 
+# Directorio donde se guarda el par de llaves RSA que firma los JWT.
+# Si no existe, se genera al arrancar. Debe persistir entre reinicios.
+jwt:
+  keys-dir: ${JWT_KEYS_DIR:/keys}
+
 management:
   endpoints:
     web:

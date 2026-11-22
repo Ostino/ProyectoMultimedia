@@ -65,6 +65,9 @@ services:
       POSTGRES_DB:       ${POSTGRES_DB}
       POSTGRES_USER:     ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_KEYS_DIR:      /keys
+    volumes:
+      - auth-keys:/keys     # JWT signing key pair: survives restarts, so sessions stay valid
     depends_on:
       postgres:
         condition: service_healthy
@@ -159,3 +162,4 @@ networks:
 
 volumes:
   pgdata:
+  auth-keys:
