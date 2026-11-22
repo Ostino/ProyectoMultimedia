@@ -1,0 +1,27 @@
+# Proxy de producción: un solo dominio con HTTPS automático.
+# Reproduce el ruteo de nginx/nginx.conf (bloque mi-domain.com).
+# El dominio sale de la variable DOMAIN del archivo .env.
+
+{$DOMAIN} {
+    encode gzip
+
+    # Debe coincidir con el límite de subida de app-service
+    request_body {
+        max_size 50MB
+    }
+
+    # auth-service conserva el prefijo: /auth/login -> /auth/login
+    handle /auth/* {
+        reverse_proxy auth-service:8081
+    }
+
+    # app-service quita el prefijo: /api/files -> /files
+    handle_path /api/* {
+        reverse_proxy app-service:8080
+    }
+
+    # Frontend React (SPA)
+    handle {
+        reverse_proxy web:3000
+    }
+}

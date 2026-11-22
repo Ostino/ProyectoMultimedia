@@ -1,17 +1,17 @@
 # Secrets
 .env
 
-# Media storage (bind mount shared by app-service and optimizer-service)
+# Archivos subidos por los usuarios (solo se versiona la carpeta vacía)
 storage/*
 !storage/.gitkeep
-
-# Frontend
-web/node_modules/
-web/dist/
 
 # Maven
 **/target/
 **/.mvn/repository/
+
+# Node
+**/node_modules/
+web/dist/
 
 # IDE
 .idea/

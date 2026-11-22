@@ -1,0 +1,72 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ProyectoMultimedia — ajustes de PRODUCCIÓN
+#
+# Se usa JUNTO al docker-compose.yml principal, que no se modifica:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+#
+# Qué cambia respecto al entorno de desarrollo:
+#   - Postgres y RabbitMQ dejan de publicar puertos hacia afuera.
+#   - Caddy reemplaza a nginx/: un solo dominio con HTTPS automático
+#     (Let's Encrypt) y las mismas rutas /auth/*, /api/* y la SPA.
+#   - Subidas limitadas a 50 MB (demo pública) y memoria acotada para las JVM.
+#   - Modo demo: los archivos subidos se borran solos después de un tiempo.
+#   - La API key de Gemini llega desde .env, nunca desde el código.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  postgres:
+    ports: !reset []        # la base de datos solo es accesible dentro de Docker
+
+  rabbitmq:
+    ports: !reset []        # el panel de RabbitMQ no queda expuesto a internet
+
+  auth-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx512m"
+
+  app-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx768m"
+      SPRING_SERVLET_MULTIPART_MAXFILESIZE: 50MB
+      SPRING_SERVLET_MULTIPART_MAXREQUESTSIZE: 50MB
+      # Modo demo: los archivos subidos se borran después de DEMO_CLEANUP_RETENTION
+      DEMO_CLEANUP_ENABLED: "true"
+      DEMO_CLEANUP_RETENTION: ${DEMO_CLEANUP_RETENTION:-1h}
+      DEMO_KEEP_FILES_BEFORE: ${DEMO_KEEP_FILES_BEFORE:-}
+
+  optimizer-service:
+    environment:
+      JAVA_TOOL_OPTIONS: "-Xmx768m"
+      # Etiquetado con IA: optimizer-service es el único servicio que llama a Gemini
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.8-flash}
+
+  web:
+    build:
+      args:
+        # Muestra el aviso de borrado automático en el modal de subida
+        VITE_DEMO_RETENTION: ${DEMO_CLEANUP_RETENTION:-1h}
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      DOMAIN: ${DOMAIN}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data          # certificados HTTPS (no borrar)
+      - caddy_config:/config
+    depends_on:
+      - web
+      - auth-service
+      - app-service
+    restart: unless-stopped
+    networks:
+      - proxy
+
+volumes:
+  caddy_data:
+  caddy_config:
