@@ -1,9 +1,17 @@
 # Secrets
 .env
 
+# Archivos subidos por los usuarios (solo se versiona la carpeta vacía)
+storage/*
+!storage/.gitkeep
+
 # Maven
 **/target/
 **/.mvn/repository/
+
+# Node
+**/node_modules/
+web/dist/
 
 # IDE
 .idea/

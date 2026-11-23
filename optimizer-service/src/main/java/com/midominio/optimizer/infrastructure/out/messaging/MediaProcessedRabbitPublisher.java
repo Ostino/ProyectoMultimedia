@@ -6,6 +6,7 @@ import com.midominio.optimizer.infrastructure.config.RabbitConfig;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,7 +27,8 @@ public class MediaProcessedRabbitPublisher implements ResultPublisher {
                 result.getDerivatives(),
                 result.getMetadata(),
                 result.isSuccess(),
-                result.getErrorMessage());
+                result.getErrorMessage(),
+                result.getAiTags());
         rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, RabbitConfig.PROCESSED_RK, message);
     }
 
@@ -36,5 +38,6 @@ public class MediaProcessedRabbitPublisher implements ResultPublisher {
             Map<String, String> derivatives,
             Map<String, Object> metadata,
             boolean success,
-            String errorMessage) {}
+            String errorMessage,
+            List<String> aiTags) {}
 }
