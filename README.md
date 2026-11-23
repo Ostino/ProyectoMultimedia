@@ -1,7 +1,7 @@
 # Gestor Multimedia
 
 Aplicación web para subir, organizar y previsualizar archivos multimedia (imágenes, audio, video y PDF). Los archivos se procesan en segundo plano para generar miniaturas y extraer metadatos, y se etiquetan automáticamente con IA (Google Gemini).
-
+Esto cuando se despliegue en local
 **Demo:** https://TU-DOMINIO <!-- reemplaza con el link real -->
 **Cuenta demo:** usuario `TU-USUARIO` · contraseña `TU-CONTRASEÑA` <!-- la completa el autor -->
 
