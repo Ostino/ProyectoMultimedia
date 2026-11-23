@@ -85,4 +85,4 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
 
 ## Autor
 
-Oscar David Mur Rodriguez — [LinkedIn](https://linkedin.com/in/TU-PERFIL)
+Oscar David Mur Rodriguez — [LinkedIn](https://www.linkedin.com/in/oscar-mur-324689330/)
